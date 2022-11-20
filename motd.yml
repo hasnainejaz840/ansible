@@ -1,0 +1,9 @@
+# Display MOTD banner on loging
+- hosts: web1
+  become: true
+  gather_facts: False
+  tasks:
+          - name: Adding message in the motd file
+            copy:
+                    dest: /etc/motd
+                    content: 'Welcome to Ansible Manage Nodes'
