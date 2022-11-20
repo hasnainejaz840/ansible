@@ -1,0 +1,25 @@
+# Adding a username ansible on control nodes and setting a password
+---
+- hosts: web1
+  become: True
+  gather_facts: False
+  tasks:
+          - name: Creating username ansible and setting password as ansible
+            user:
+                    name: ansible
+                    comment: Ansible
+                    groups: wheel
+                    password: "{{ 'grud!yyz' | password_hash('sha256')}}"
+                    state: present
+                    # remove: yes
+          - name: transferring ansible keys for passwordless login
+            authorized_key:
+                    user: ansible
+                    key: "{{ lookup('file', '/home/ansible/.ssh/id_rsa.pub') }}"
+          - name: configure privelege escalation without password
+            lineinfile:
+                      path: /etc/sudoers
+                      state: present
+                      backup: yes
+                      line: 'ansible ALL=(ALL) NOPASSWD: ALL'
+                      validate: /usr/sbin/visudo -cf %s

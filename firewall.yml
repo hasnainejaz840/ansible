@@ -1,0 +1,39 @@
+# Making a 555 as non default ssh port,  if you want to mnake any other port replace with 555
+---
+- hosts: mhost6
+  become: True
+  gather_facts: False
+  tasks:
+          - name: uncommenting #Port 22 line
+            lineinfile:
+                    backup: True
+                    state: present
+                    path: /etc/ssh/sshd_config
+                    regexp: '^#Port=22'
+                    line: 'Port 22'
+          - name:  inserting after line port 555
+            lineinfile:
+                    state: present
+                    path: /etc/ssh/sshd_config
+                    insertafter: '^Port 22'
+                    line: 'Port 555'
+          - name: adding port 555 to firewall
+            firewalld:
+                    port: 555/tcp
+                    state: enabled
+                    permanent: yes
+          - name: Adding selinux rule for port 555
+            seport:
+                    ports: 555
+                    proto: tcp
+                    setype: ssh_port_t
+                    state: present
+          - name: Reload firewalld
+            service:
+                    name: firewalld
+                    state: reloaded
+          - name: Relaod Sshd service
+            service:
+                    name: sshd
+                    state: reloaded
+...
